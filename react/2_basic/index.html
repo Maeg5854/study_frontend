@@ -1,7 +1,39 @@
 <!DOCTYPE html>
 <html>
-  <body></body>
+  <body>
+    <div id="root"></div>
+  </body>
   <script src="https://unpkg.com/react@17.0.2/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
-  <script></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- 리액트 돔은 리액트 오브젝트를 html 구조 안에 둘 수 있게 한다.-->
+  <script type="text/babel">
+    const root = document.getElementById("root");
+
+    function Title() {
+      return (
+        <h3 id="title" onMouseEnter={() => console.log("mouse enter")}>
+          Hello, I'm a span
+        </h3>
+      );
+    }
+
+    const Button = () => (
+      <button
+        style={{ background: "red" }}
+        onClick={() => console.log("i'm clicked")}
+      >
+        Click me!
+      </button>
+    );
+
+    const Container = () => (
+      <div>
+        <Title />
+        <Button />
+      </div>
+    ); // JSX에서 직접 만든 엘레멘트는 대문자로 작성해야한다.
+
+    ReactDOM.render(<Container />, root); // show user
+  </script>
 </html>
