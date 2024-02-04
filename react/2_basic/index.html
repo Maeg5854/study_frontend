@@ -3,12 +3,13 @@
   <body>
     <div id="root"></div>
   </body>
-  <script src="https://unpkg.com/react@17.0.2/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/prop-types@15.7.2/prop-types.js"></script>
   <!-- 리액트 돔은 리액트 오브젝트를 html 구조 안에 둘 수 있게 한다.-->
   <script type="text/babel">
-    function Btn({ hello, onClick }) {
+    function Btn({ text, fontSize = 16, onClick }) {
       return (
         <button
           onClick={onClick}
@@ -19,22 +20,26 @@
             margin: "5px",
             borderRadius: 10,
             border: 0,
+            fontSize: fontSize,
           }}
         >
-          {hello}
+          {text}
         </button>
       );
     }
 
-    const MemorizedBtn = React.memo(Btn); // 해당 컴포넌트의 prop 이 변경되었을 경우에만 re-render
+    Btn.propTypes = {
+      text: PropTypes.string.isRequired,
+      fontSize: PropTypes.number,
+    };
 
     const App = () => {
       const [value, setValue] = React.useState("Save Changes");
       const changeValue = () => setValue("Revert Changes");
       return (
         <div>
-          <MemorizedBtn hello={value} onClick={changeValue} />
-          <MemorizedBtn hello="Confirm" />
+          <Btn text={value} fontSize={10} onClick={changeValue} />
+          <Btn text={"hgel"} />
         </div>
       );
     };
