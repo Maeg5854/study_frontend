@@ -2,34 +2,59 @@ import styles from "./App.module.css";
 import { useEffect, useState } from "react";
 
 function App() {
-  const [toDo, setTodo] = useState("");
-  const [toDos, setToDos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [coins, setCoins] = useState([]);
+  const [selectedCoin, setSelectedCoin] = useState({});
+  const [dollars, setDollars] = useState(0);
 
-  const onChange = (event) => setTodo(event.target.value);
+  const onChange = (event) => setDollars(event.target.value);
+  const onSelect = (event) => {
+    console.log(event);
+  };
   const onSubmit = (event) => {
     event.preventDefault();
-    if (toDo === "") return;
-
-    setToDos((currentToDos) => [toDo, ...currentToDos]);
-    setTodo("");
   };
+
+  useEffect(() => {
+    fetch("https://api.coinpaprika.com/v1/tickers")
+      .then((response) => response.json())
+      .then((json) => {
+        setCoins(json);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <div>
-      <h1>My To dos ({toDos.length})</h1>
-      <form onSubmit={onSubmit}>
-        <input
-          value={toDo}
-          type="text"
-          placeholder="Write your to do..."
-          onChange={onChange}
-        />
-        <button>Add To Do</button>
-      </form>
-      <hr />
-      {toDos.map((item, index) => (
-        <li key={index}>{item}</li>
-      ))}
+      <h1>The Coins!</h1>
+
+      {loading ? (
+        <strong>Loading....</strong>
+      ) : (
+        <div>
+          <form onSubmit={onSubmit}>
+            <label htmlFor="coin">COIN</label>
+            <select id="coin" onChange={onSelect}>
+              {coins.map((coin) => (
+                <option key={coin.id}>
+                  {coin.name} ({coin.symbol}): ${coin.quotes.USD.price}
+                </option>
+              ))}
+            </select>
+            <label htmlFor="dollar">USD</label>
+            <input
+              id="dollar"
+              value={dollars}
+              onChange={onChange}
+              type="number"
+              placeholder="How much dollars"
+            />
+            <br />
+            <button>Translate</button>
+          </form>
+          <h3>USD {dollars} is</h3>
+        </div>
+      )}
     </div>
   );
 }
