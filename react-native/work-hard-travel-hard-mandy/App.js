@@ -7,29 +7,48 @@ import {
   TouchableWithoutFeedback,
   View,
   Pressable,
+  TextInput,
 } from "react-native";
 import { theme } from "./colors";
+import { useState } from "react";
 
 export default function App() {
+  const [working, setWorking] = useState(true);
+  const [text, setText] = useState("");
+  const travel = () => setWorking(false);
+  const work = () => setWorking(true);
+  const onChangeText = (txt) => setText(txt);
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Text style={styles.btnText}>Touchable</Text>
+        <TouchableOpacity onPress={work}>
+          <Text
+            style={{ ...styles.btnText, color: working ? "white" : theme.grey }}
+          >
+            work
+          </Text>
         </TouchableOpacity>
-        <TouchableHighlight onPress={() => console.log("pressed TH")}>
-          <Text style={styles.btnText}>TouchableHighlight</Text>
-        </TouchableHighlight>
-        <TouchableWithoutFeedback onPress={() => console.log("pressed TWF")}>
-          <Text style={styles.btnText}>TouchableWithoutFeedback</Text>
-        </TouchableWithoutFeedback>
-        <Pressable
-          onPress={() => console.log("pressed Pr")}
-          TouchableOpacity={0.5}
-        >
-          <Text style={styles.btnText}>Pressable</Text>
-        </Pressable>
+        <TouchableOpacity onPress={travel}>
+          <Text
+            style={{
+              ...styles.btnText,
+              color: !working ? "white" : theme.grey,
+            }}
+          >
+            travel
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <View>
+        <TextInput
+          style={styles.input}
+          placeholder={working ? "Add a To do" : "Where do you want to go"}
+          returnKeyType="send"
+          onChangeText={onChangeText}
+        ></TextInput>
+        <Text style={styles.listText}>{text}</Text>
       </View>
     </View>
   );
@@ -42,7 +61,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-    flexDirection: "column",
+    flexDirection: "row",
     marginTop: 100,
     justifyContent: "space-between",
   },
@@ -50,5 +69,16 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 38,
     fontWeight: "600",
+  },
+  input: {
+    backgroundColor: "white",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    marginTop: 20,
+    fontSize: 18,
+  },
+  listText: {
+    color: "white",
   },
 });
