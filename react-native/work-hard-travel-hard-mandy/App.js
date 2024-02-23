@@ -3,10 +3,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  TouchableHighlight,
-  TouchableWithoutFeedback,
   View,
-  Pressable,
+  ScrollView,
   TextInput,
 } from "react-native";
 import { theme } from "./colors";
@@ -15,9 +13,17 @@ import { useState } from "react";
 export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
+  const [toDos, setToDos] = useState({});
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
   const onChangeText = (txt) => setText(txt);
+  const addToDo = () => {
+    if (text === "") return;
+
+    const newToDos = { ...toDos, [Date.now()]: { work: working, text } };
+    setToDos(newToDos);
+    setText("");
+  };
 
   return (
     <View style={styles.container}>
@@ -46,10 +52,20 @@ export default function App() {
           style={styles.input}
           placeholder={working ? "Add a To do" : "Where do you want to go"}
           returnKeyType="send"
+          value={text}
           onChangeText={onChangeText}
+          onSubmitEditing={addToDo}
         ></TextInput>
-        <Text style={styles.listText}>{text}</Text>
       </View>
+      <ScrollView style={styles.toDoBox}>
+        {Object.keys(toDos).map((key) => {
+          return toDos[key].work === working ? (
+            <View style={styles.toDo} key={key}>
+              <Text style={styles.toDoText}>{toDos[key].text}</Text>
+            </View>
+          ) : null;
+        })}
+      </ScrollView>
     </View>
   );
 }
@@ -79,6 +95,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   listText: {
+    color: "white",
+  },
+  toDoBox: {
+    flex: 1,
+    marginVertical: 10,
+  },
+  toDo: {
+    color: "white",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: "grey",
+    borderRadius: 15,
+    marginVertical: 5,
+  },
+  toDoText: {
     color: "white",
   },
 });
