@@ -1,4 +1,5 @@
 import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   StyleSheet,
   Text,
@@ -8,7 +9,9 @@ import {
   TextInput,
 } from "react-native";
 import { theme } from "./colors";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const STORAGE_KEY = "@toDos";
 
 export default function App() {
   const [working, setWorking] = useState(true);
@@ -17,13 +20,29 @@ export default function App() {
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
   const onChangeText = (txt) => setText(txt);
-  const addToDo = () => {
+  const addToDo = async () => {
     if (text === "") return;
 
     const newToDos = { ...toDos, [Date.now()]: { work: working, text } };
     setToDos(newToDos);
+    await saveToDos(newToDos);
     setText("");
   };
+  const saveToDos = async (toSave) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  const loadToDos = async () => {
+    const s = await AsyncStorage.getItem(STORAGE_KEY);
+    setToDos(JSON.parse(s));
+  };
+
+  useEffect(() => {
+    loadToDos();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -105,7 +124,7 @@ const styles = StyleSheet.create({
     color: "white",
     paddingHorizontal: 15,
     paddingVertical: 10,
-    backgroundColor: "grey",
+    backgroundColor: "#222222",
     borderRadius: 15,
     marginVertical: 5,
   },
