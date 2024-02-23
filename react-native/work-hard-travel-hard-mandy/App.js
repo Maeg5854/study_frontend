@@ -7,9 +7,11 @@ import {
   View,
   ScrollView,
   TextInput,
+  Alert,
 } from "react-native";
 import { theme } from "./colors";
 import { useEffect, useState } from "react";
+import { EvilIcons } from "@expo/vector-icons";
 
 const STORAGE_KEY = "@toDos";
 
@@ -36,8 +38,28 @@ export default function App() {
     }
   };
   const loadToDos = async () => {
-    const s = await AsyncStorage.getItem(STORAGE_KEY);
-    setToDos(JSON.parse(s));
+    try {
+      const s = await AsyncStorage.getItem(STORAGE_KEY);
+      setToDos(JSON.parse(s));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  const deleteToDo = async (key) => {
+    Alert.alert("Delete To Do?", "Are you sure?", [
+      { text: "Cancle", style: "cancle" },
+      {
+        text: "I'm sure",
+        style: "destructive",
+        onPress: async () => {
+          const newToDos = { ...toDos };
+          delete newToDos[key]; // we can not delete toDo directly in toDos, but can do in newToDos because of non-mutation of newToDos
+          setToDos(newToDos);
+          await saveToDos(newToDos);
+        },
+      },
+    ]);
+    return;
   };
 
   useEffect(() => {
@@ -81,6 +103,9 @@ export default function App() {
           return toDos[key].work === working ? (
             <View style={styles.toDo} key={key}>
               <Text style={styles.toDoText}>{toDos[key].text}</Text>
+              <TouchableOpacity onPress={() => deleteToDo(key)}>
+                <EvilIcons name="trash" size={20} color="white" />
+              </TouchableOpacity>
             </View>
           ) : null;
         })}
@@ -123,10 +148,12 @@ const styles = StyleSheet.create({
   toDo: {
     color: "white",
     paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingVertical: 20,
     backgroundColor: "#222222",
     borderRadius: 15,
     marginVertical: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   toDoText: {
     color: "white",
