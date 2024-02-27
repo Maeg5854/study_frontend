@@ -13,14 +13,37 @@ import { theme } from "./colors";
 import { useEffect, useState } from "react";
 import { EvilIcons } from "@expo/vector-icons";
 
-const STORAGE_KEY = "@toDos";
+const STORAGE_KEY_TODOS = "@toDos";
+const STORAGE_KEY_MODE = "@mode";
 
 export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
-  const travel = () => setWorking(false);
-  const work = () => setWorking(true);
+
+  const saveMode = async () => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY_MODE, working.toString());
+      console.log("saveMode / working = ", working);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  const loadMode = async (mode) => {
+    try {
+      const s = await AsyncStorage.getItem(STORAGE_KEY_MODE);
+      if (!s) return;
+      setWorking(s.toLowerCase() === "true");
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  const travel = () => {
+    setWorking(false);
+  };
+  const work = () => {
+    setWorking(true);
+  };
   const onChangeText = (txt) => setText(txt);
   const addToDo = async () => {
     if (text === "") return;
@@ -32,14 +55,14 @@ export default function App() {
   };
   const saveToDos = async (toSave) => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      await AsyncStorage.setItem(STORAGE_KEY_TODOS, JSON.stringify(toSave));
     } catch (e) {
       console.error(e);
     }
   };
   const loadToDos = async () => {
     try {
-      const s = await AsyncStorage.getItem(STORAGE_KEY);
+      const s = await AsyncStorage.getItem(STORAGE_KEY_TODOS);
       setToDos(JSON.parse(s));
     } catch (e) {
       console.error(e);
@@ -63,8 +86,12 @@ export default function App() {
   };
 
   useEffect(() => {
+    loadMode();
     loadToDos();
   }, []);
+  useEffect(() => {
+    saveMode();
+  }, [working]);
 
   return (
     <View style={styles.container}>
