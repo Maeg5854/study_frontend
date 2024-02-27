@@ -24,7 +24,6 @@ export default function App() {
   const saveMode = async () => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY_MODE, working.toString());
-      console.log("saveMode / working = ", working);
     } catch (e) {
       console.error(e);
     }
@@ -48,7 +47,10 @@ export default function App() {
   const addToDo = async () => {
     if (text === "") return;
 
-    const newToDos = { ...toDos, [Date.now()]: { work: working, text } };
+    const newToDos = {
+      ...toDos,
+      [Date.now()]: { work: working, text: text, complete: false },
+    };
     setToDos(newToDos);
     await saveToDos(newToDos);
     setText("");
@@ -83,6 +85,14 @@ export default function App() {
       },
     ]);
     return;
+  };
+  const completeTodo = async (key) => {
+    const newToDos = {
+      ...toDos,
+      [key]: { ...toDos[key], complete: !toDos[key].complete },
+    };
+    setToDos(newToDos);
+    await saveToDos(newToDos);
   };
 
   useEffect(() => {
@@ -129,10 +139,35 @@ export default function App() {
         {Object.keys(toDos).map((key) => {
           return toDos[key].work === working ? (
             <View style={styles.toDo} key={key}>
-              <Text style={styles.toDoText}>{toDos[key].text}</Text>
-              <TouchableOpacity onPress={() => deleteToDo(key)}>
-                <EvilIcons name="trash" size={20} color="white" />
-              </TouchableOpacity>
+              <Text
+                style={
+                  toDos[key].complete
+                    ? styles.toDoTextComplete
+                    : styles.toDoTextNonComplete
+                }
+              >
+                {toDos[key].text}
+              </Text>
+              <View style={styles.toDoManipulationContainer}>
+                <TouchableOpacity onPress={() => completeTodo(key)}>
+                  <EvilIcons
+                    name="check"
+                    style={
+                      toDos[key].complete
+                        ? styles.toDoBtnToResetComplete
+                        : styles.toDoBtnToComplete
+                    }
+                    color="white"
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => deleteToDo(key)}>
+                  <EvilIcons
+                    name="trash"
+                    style={styles.toDoBtnToDelete}
+                    color="white"
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
           ) : null;
         })}
@@ -182,7 +217,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  toDoText: {
+  toDoTextComplete: {
+    color: "grey",
+    textDecorationLine: "line-through",
+  },
+  toDoTextNonComplete: {
     color: "white",
+  },
+  toDoManipulationContainer: {
+    flexDirection: "row",
+  },
+  toDoBtnToDelete: {
+    fontSize: 20,
+    paddingHorizontal: 5,
+  },
+  toDoBtnToComplete: {
+    fontSize: 20,
+    paddingHorizontal: 5,
+    color: "white",
+  },
+  toDoBtnToResetComplete: {
+    fontSize: 20,
+    paddingHorizontal: 5,
+    color: "grey",
   },
 });
