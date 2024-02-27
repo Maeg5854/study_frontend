@@ -20,6 +20,7 @@ export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
+  const [editText, setEditText] = useState("");
 
   const saveMode = async () => {
     try {
@@ -49,7 +50,12 @@ export default function App() {
 
     const newToDos = {
       ...toDos,
-      [Date.now()]: { work: working, text: text, complete: false },
+      [Date.now()]: {
+        work: working,
+        text: text,
+        complete: false,
+        editing: false,
+      },
     };
     setToDos(newToDos);
     await saveToDos(newToDos);
@@ -69,6 +75,23 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
+  };
+  const editTodo = async (key) => {
+    setEditText(toDos[key].text);
+    const newToDos = {
+      ...toDos,
+      [key]: { ...toDos[key], editing: true },
+    };
+    setToDos(newToDos);
+  };
+  const updateTodo = async (key) => {
+    const newToDos = {
+      ...toDos,
+      [key]: { ...toDos[key], text: editText.trim(), editing: false },
+    };
+    setToDos(newToDos);
+    setEditText("");
+    await saveToDos(newToDos);
   };
   const deleteToDo = async (key) => {
     Alert.alert("Delete To Do?", "Are you sure?", [
@@ -94,6 +117,7 @@ export default function App() {
     setToDos(newToDos);
     await saveToDos(newToDos);
   };
+  const onChangeEditText = (txt) => setEditText(txt);
 
   useEffect(() => {
     loadMode();
@@ -139,16 +163,42 @@ export default function App() {
         {Object.keys(toDos).map((key) => {
           return toDos[key].work === working ? (
             <View style={styles.toDo} key={key}>
-              <Text
-                style={
-                  toDos[key].complete
-                    ? styles.toDoTextComplete
-                    : styles.toDoTextNonComplete
-                }
-              >
-                {toDos[key].text}
-              </Text>
+              {toDos[key].editing ? (
+                <TextInput
+                  style={styles.toDoEditInput}
+                  returnKeyType="none"
+                  defaultValue={toDos[key].text}
+                  value={editText}
+                  onChangeText={onChangeEditText}
+                  onSubmitEditing={() => updateTodo(key)}
+                  onBlur={() => updateTodo(key)}
+                  autoFocus
+                  multiline
+                ></TextInput>
+              ) : (
+                <Text
+                  multiline
+                  style={
+                    toDos[key].complete
+                      ? styles.toDoTextComplete
+                      : styles.toDoTextNonComplete
+                  }
+                >
+                  {toDos[key].text}
+                </Text>
+              )}
               <View style={styles.toDoManipulationContainer}>
+                <TouchableOpacity onPress={() => editTodo(key)}>
+                  <EvilIcons
+                    name="pencil"
+                    style={
+                      toDos[key].complete
+                        ? styles.toDoBtnToResetComplete
+                        : styles.toDoBtnToComplete
+                    }
+                    color="white"
+                  />
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => completeTodo(key)}>
                   <EvilIcons
                     name="check"
@@ -218,10 +268,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   toDoTextComplete: {
+    flex: 1,
     color: "grey",
     textDecorationLine: "line-through",
   },
   toDoTextNonComplete: {
+    flex: 1,
     color: "white",
   },
   toDoManipulationContainer: {
@@ -240,5 +292,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     paddingHorizontal: 5,
     color: "grey",
+  },
+  toDoEditInput: {
+    flex: 1,
+    color: "white",
+    textDecorationLine: "underline",
   },
 });
